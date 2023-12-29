@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log"
 	"strings"
 
 	"github.com/kamontat/ghlabel-cloner/apis"
@@ -36,42 +37,56 @@ func main() {
 	utils.Info("Start %s version %s (%s)", name, version, date)
 
 	var config = configs.Loads(configPaths)
-	utils.Info("Cloning %d labels to repository '%s/%s'", len(config.Labels), owner, repo)
+	if owner == "" {
+		log.Panicln("Owner (--owner) is required options")
+	}
 
 	var err error
-	if replace {
-		labels, err := apis.ListLabels(owner, repo)
+	var repositories []string = make([]string, 0)
+	if repo == "" {
+		repositories, err = apis.ListReposName(owner)
 		utils.MustNotError(err)
-
-		utils.Info("Deleting all existed %d labels", len(labels))
-		err = apis.DeleteLabels(owner, repo)
-		utils.MustNotError(err)
-
-		utils.Info("Creating %d labels", len(config.Labels))
 	} else {
-		utils.Info("Updating %d labels", len(config.Labels))
+		repositories = append(repositories, repo)
 	}
 
-	var dedup map[string]bool = make(map[string]bool)
-	var errors []error
-	for _, label := range config.Labels {
-		if key, ok := dedup[label.Name]; key && ok {
-			utils.Error("Duplicated label found: %s", label.Name)
-			continue
+	for _, repository := range repositories {
+		utils.Info("Cloning %d labels to repository '%s/%s'", len(config.Labels), owner, repository)
+
+		if replace {
+			labels, err := apis.ListLabels(owner, repository)
+			utils.MustNotError(err)
+
+			utils.Info("Deleting all existed %d labels", len(labels))
+			err = apis.DeleteLabels(owner, repository)
+			utils.MustNotError(err)
+
+			utils.Info("Creating %d labels", len(config.Labels))
+		} else {
+			utils.Info("Updating %d labels", len(config.Labels))
 		}
 
-		err = apis.CreateOrUpdateLabel(owner, repo, label)
-		errors = append(errors, err)
-		dedup[label.Name] = true
-	}
+		var dedup map[string]bool = make(map[string]bool)
+		var errors []error
+		for _, label := range config.Labels {
+			if key, ok := dedup[label.Name]; key && ok {
+				utils.Error("Duplicated label found: %s", label.Name)
+				continue
+			}
 
-	err = utils.MergeErrors(errors)
-	utils.MustNotError(err)
+			err = apis.CreateOrUpdateLabel(owner, repository, label)
+			errors = append(errors, err)
+			dedup[label.Name] = true
+		}
+
+		err = utils.MergeErrors(errors)
+		utils.MustNotError(err)
+	}
 }
 
 func init() {
 	flag.Var(&configPaths, "configs", "Config path can contains multiple files")
-	flag.StringVar(&owner, "owner", "kc-workspace", "Repository owner")
+	flag.StringVar(&owner, "owner", "", "Repository owner")
 	flag.StringVar(&repo, "repo", "", "Repository name")
 	flag.BoolVar(&replace, "replace", false, "Replace existed labels with config")
 
