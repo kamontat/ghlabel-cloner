@@ -1,0 +1,4 @@
+labels:
+  - name: "autorelease: tagged"
+    description: "Release PR has been merged and the release has been tagged in GitHub"
+    color: "#EDEDED"

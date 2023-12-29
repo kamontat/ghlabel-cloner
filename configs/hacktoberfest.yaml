@@ -1,0 +1,4 @@
+labels:
+  - name: "hacktoberfest-accepted"
+    description: "Special label for Hacktoberfest"
+    color: "8A2B64"
