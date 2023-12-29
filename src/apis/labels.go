@@ -48,7 +48,7 @@ func ListLabels(owner, repo string) (map[string]*github.Label, error) {
 	return labelMap, err
 }
 
-func CreateOrUpdateLabels(owner, repo string, labelConfig configs.ConfigLabel) error {
+func CreateOrUpdateLabel(owner, repo string, labelConfig configs.ConfigLabel) error {
 	var labels, err = ListLabels(owner, repo)
 	if err != nil {
 		return err

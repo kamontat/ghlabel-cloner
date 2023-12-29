@@ -2,17 +2,28 @@ package main
 
 import (
 	"flag"
+	"strings"
 
 	"github.com/kamontat/ghlabel-cloner/apis"
 	"github.com/kamontat/ghlabel-cloner/configs"
 	"github.com/kamontat/ghlabel-cloner/utils"
 )
 
+type ArrayArg []string
+
+func (a *ArrayArg) Set(value string) error {
+	*a = append(*a, value)
+	return nil
+}
+func (a *ArrayArg) String() string {
+	return strings.Join(*a, ", ")
+}
+
 var (
-	configPath string
-	owner      string
-	repo       string
-	replace    bool
+	configPaths ArrayArg
+	owner       string
+	repo        string
+	replace     bool
 )
 
 var (
@@ -24,21 +35,34 @@ var (
 func main() {
 	utils.Info("Start %s version %s (%s)", name, version, date)
 
-	var config = configs.Load(configPath)
+	var config = configs.Loads(configPaths)
 	utils.Info("Cloning %d labels to repository '%s/%s'", len(config.Labels), owner, repo)
 
 	var err error
 	if replace {
-		utils.Info("Deleting all existed labels")
+		labels, err := apis.ListLabels(owner, repo)
+		utils.MustNotError(err)
+
+		utils.Info("Deleting all existed %d labels", len(labels))
 		err = apis.DeleteLabels(owner, repo)
 		utils.MustNotError(err)
+
+		utils.Info("Creating %d labels", len(config.Labels))
+	} else {
+		utils.Info("Updating %d labels", len(config.Labels))
 	}
 
+	var dedup map[string]bool = make(map[string]bool)
 	var errors []error
-	for i, label := range config.Labels {
-		utils.Info("Processing... label #%d", i+1)
-		err = apis.CreateOrUpdateLabels(owner, repo, label)
+	for _, label := range config.Labels {
+		if key, ok := dedup[label.Name]; key && ok {
+			utils.Error("Duplicated label found: %s", label.Name)
+			continue
+		}
+
+		err = apis.CreateOrUpdateLabel(owner, repo, label)
 		errors = append(errors, err)
+		dedup[label.Name] = true
 	}
 
 	err = utils.MergeErrors(errors)
@@ -46,7 +70,7 @@ func main() {
 }
 
 func init() {
-	flag.StringVar(&configPath, "config", "", "Config path")
+	flag.Var(&configPaths, "configs", "Config path can contains multiple files")
 	flag.StringVar(&owner, "owner", "kc-workspace", "Repository owner")
 	flag.StringVar(&repo, "repo", "", "Repository name")
 	flag.BoolVar(&replace, "replace", false, "Replace existed labels with config")

@@ -11,6 +11,10 @@ func init() {
 	log.SetFlags(log.Ltime | log.Lshortfile | log.Lmsgprefix)
 }
 
+func Error(format string, args ...any) {
+	log.Printf(fmt.Sprintf("[ERR] %s\n", format), args...)
+}
+
 func Info(format string, args ...any) {
 	log.Printf(fmt.Sprintf("[INF] %s\n", format), args...)
 }
