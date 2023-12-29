@@ -15,7 +15,15 @@ var (
 	replace    bool
 )
 
+var (
+	name    string = "ghlabel"
+	version string = "dev"
+	date    string = "unknown"
+)
+
 func main() {
+	utils.Info("Start %s version %s (%s)", name, version, date)
+
 	var config = configs.Load(configPath)
 	utils.Info("Cloning %d labels to repository '%s/%s'", len(config.Labels), owner, repo)
 
