@@ -10,7 +10,7 @@ Cloning GitHub labels from config files.
   -owner string
     	Repository owner (either username or organization name)
   -replace
-    	Replace existed labels with config
+    	Replace existed labels with config by delete all labels and recreate it
   -repo string
     	Repository name; if not exist, will updates all repository from owner
 ```

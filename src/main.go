@@ -50,6 +50,8 @@ func main() {
 		repositories = append(repositories, repo)
 	}
 
+	utils.Info("Updating %d repositories", len(repositories))
+	utils.Debug("Repositories: %v", repositories)
 	for _, repository := range repositories {
 		utils.Info("Cloning %d labels to repository '%s/%s'", len(config.Labels), owner, repository)
 
@@ -88,7 +90,7 @@ func init() {
 	flag.Var(&configPaths, "configs", "Config path can contains multiple files")
 	flag.StringVar(&owner, "owner", "", "Repository owner")
 	flag.StringVar(&repo, "repo", "", "Repository name; if not exist, will updates all repository from owner")
-	flag.BoolVar(&replace, "replace", false, "Replace existed labels with config")
+	flag.BoolVar(&replace, "replace", false, "Replace existed labels with config by delete all labels and recreate it")
 
 	flag.Parse()
 }
