@@ -5,6 +5,10 @@
       "path": "src"
     },
     {
+      "name": "configs",
+      "path": "configs"
+    },
+    {
       "name": "root",
       "path": "."
     }
