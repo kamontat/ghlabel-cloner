@@ -18,7 +18,7 @@ func ListReposName(owner string) ([]string, error) {
 			return repositoryNames, err
 		}
 		for _, repo := range repos {
-			repositoryNames = append(repositoryNames, *repo.FullName)
+			repositoryNames = append(repositoryNames, *repo.Name)
 		}
 		if resp.NextPage == 0 {
 			break
