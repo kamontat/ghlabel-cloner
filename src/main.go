@@ -87,7 +87,7 @@ func main() {
 func init() {
 	flag.Var(&configPaths, "configs", "Config path can contains multiple files")
 	flag.StringVar(&owner, "owner", "", "Repository owner")
-	flag.StringVar(&repo, "repo", "", "Repository name")
+	flag.StringVar(&repo, "repo", "", "Repository name; if not exist, will updates all repository from owner")
 	flag.BoolVar(&replace, "replace", false, "Replace existed labels with config")
 
 	flag.Parse()
